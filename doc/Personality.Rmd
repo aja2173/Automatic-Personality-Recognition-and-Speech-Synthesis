@@ -1,0 +1,90 @@
+## Setup the libraries
+
+```{r}
+packages.used <- c("ggplot2", "dplyr", "tibble", "tidyr",  "stringr", "tidytext", "topicmodels", "wordcloud", "ggridges","forcats")
+
+# check packages that need to be installed.
+packages.needed <- setdiff(packages.used, intersect(installed.packages()[,1], packages.used))
+
+# install additional packages
+if(length(packages.needed) > 0) {
+  install.packages(packages.needed, dependencies = TRUE, repos = 'http://cran.us.r-project.org')
+}
+
+library(ggplot2)
+library(dplyr)
+library(tibble)
+library(tidyr)
+library(stringr)
+library(tidytext)
+library(topicmodels)
+library(wordcloud)
+library(ggridges)
+library(forcats)
+
+source("../lib/multiplot.R")
+```
+
+```{r}
+data <- read.csv('transcripts_lines.csv',as.is = TRUE)
+
+data_wrd <- unnest_tokens(data, word, text)
+data_wrd_nostop <- anti_join(data_wrd, stop_words, by = "word")
+
+#####EXTR
+# Unigram
+Extr_words <- count(group_by(data_wrd_nostop, word, Extr))
+
+Extr_all_words    <- rename(count(group_by(data_wrd_nostop, word)), all = n)
+
+Extr_words <- left_join(Extr_words, Extr_all_words, by = "word")
+Extr_words <- arrange(Extr_words, desc(all))
+Extr_words <- ungroup(head(Extr_words, 40))
+
+#Plot the counts of the unigrams
+ggplot(Extr_words) +
+  geom_col(aes(reorder(word, all, FUN = min), n, fill = Extr)) +
+  xlab(NULL) +
+  coord_flip() +
+  facet_wrap(~ Extr) +
+  theme(legend.position = "none") +
+  labs(title = 'Extroversion Unigram Counts')
+
+####Open
+# Unigram
+Open_words <- count(group_by(data_wrd_nostop, word, Open))
+
+Open_all_words    <- rename(count(group_by(data_wrd_nostop, word)), all = n)
+
+Open_words <- left_join(Open_words, Open_all_words, by = "word")
+Open_words <- arrange(Open_words, desc(all))
+Open_words <- ungroup(head(Open_words, 40))
+
+#Plot the counts of the unigrams
+ggplot(Open_words) +
+  geom_col(aes(reorder(word, all, FUN = min), n, fill = Open)) +
+  xlab(NULL) +
+  coord_flip() +
+  facet_wrap(~ Open) +
+  theme(legend.position = "none") +
+  labs(title = 'Open Unigram Counts')
+
+####Cons
+# Unigram
+Cons_words <- count(group_by(data_wrd_nostop, word, Cons))
+
+Cons_all_words    <- rename(count(group_by(data_wrd_nostop, word)), all = n)
+
+Cons_words <- left_join(Cons_words, Cons_all_words, by = "word")
+Cons_words <- arrange(Cons_words, desc(all))
+Cons_words <- ungroup(head(Cons_words, 40))
+
+#Plot the counts of the unigrams
+ggplot(Cons_words) +
+  geom_col(aes(reorder(word, all, FUN = min), n, fill = Cons)) +
+  xlab(NULL) +
+  coord_flip() +
+  facet_wrap(~ Cons) +
+  theme(legend.position = "none") +
+  labs(title = 'Cons Unigram Counts')
+```
